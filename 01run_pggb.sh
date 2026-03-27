@@ -10,7 +10,7 @@
 #conda activate pggb_env
 
 # 设置变量
-HOME="/public/home/zhaoshuo/work1"
+HOME="/path/to/home"
 REF="$HOME/data/reference/DM8.1_genome.fasta"
 ORI_DIR="$HOME/data/simulated/genomes" # 样本基因组路径
 OUT_DIR="$HOME/graph/pggb/exp1"
