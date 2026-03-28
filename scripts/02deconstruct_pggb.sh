@@ -7,10 +7,10 @@
 #SBATCH --error=%x.err
 
 # source ~/.bashrc
-#conda activate pggb_env
+# conda activate pggb_env
 
 # 设置变量
-HOME="/public/home/zhaoshuo/work1/graph/pggb/exp1"
+HOME="/path/to/home"
 GFA="$HOME/Sim_01_02_total_p98_s10000_n5/Sim_01_02_total.fa.gz.a8a102b.7608fc1.5832edd.smooth.final.gfa"
 OUT_PREFIX="pggb_gfa_sv"
 REF_PREFIX="DM8"
