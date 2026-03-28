@@ -9,7 +9,7 @@
 # source ~/.bashrc
 # conda activate truvari_env
 
-HOME="/public/home/zhaoshuo/work1"
+HOME="/path/to/home"
 TRUTH_VCF_DIR="$HOME/data/simulated/truth_vcf"
 QUERY_VCF="$HOME/graph/pggb/exp1/Sim_01_02_total_p98_s10000_n5/deconstruct/pggb_gfa_sv_50bp_1Mb.vcf.gz"
 OUT_DIR="$HOME/graph/pggb/exp1/Sim_01_02_total_p98_s10000_n5/deconstruct/evaluate_sv"
