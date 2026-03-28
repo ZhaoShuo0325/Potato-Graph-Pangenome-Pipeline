@@ -7,7 +7,7 @@
 #SBATCH --error=%x.err
 
 # source ~/.bashrc
-#conda activate pggb_env
+# conda activate pggb_env
 
 # 设置变量
 HOME="/path/to/home"
