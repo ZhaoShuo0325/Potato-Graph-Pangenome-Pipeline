@@ -17,7 +17,7 @@ OUTPUT_DIR="$HOME/work1/simulation/output"
 mkdir -p "$OUTPUT_DIR"
 
 for i in $(seq -w 1 2);do
-    HAP_NAME="nodup_hap0${i}" # 样本命名
+    HAP_NAME="Sim_hap0${i}" # 样本命名
     CONFIG_FILE="${CONFIG_DIR}/${HAP_NAME}_config.txt"
     HAP_OUTPUT="${OUTPUT_DIR}/${HAP_NAME}"
 
