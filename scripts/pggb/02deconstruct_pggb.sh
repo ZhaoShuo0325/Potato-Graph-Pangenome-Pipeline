@@ -56,9 +56,9 @@ echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Deconstructed VCF saved to ${OUT_PREF
 # 过滤 >50bp 的 SV
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Filtering SVs > 50bp -----"
 
-bcftools filter -i 'ABS(SVLEN) >= 50 && ABS(SVLEN) < 1000000' \
-    "${OUT_PREFIX}_final.vcf.gz" -Oz -o ${OUT_PREFIX}_50bp_1Mb.vcf.gz
-tabix -f -p vcf ${OUT_PREFIX}_50bp_1Mb.vcf.gz
-bcftools stats ${OUT_PREFIX}_50bp_1Mb.vcf.gz > ${OUT_PREFIX}_50bp_1Mb.stats
+bcftools filter -i 'ABS(SVLEN) >= 50' \
+    "${OUT_PREFIX}_final.vcf.gz" -Oz -o ${OUT_PREFIX}_50bp.vcf.gz
+tabix -f -p vcf ${OUT_PREFIX}_50bp.vcf.gz
+bcftools stats ${OUT_PREFIX}_50bp.vcf.gz > ${OUT_PREFIX}_50bp.stats
 
-echo "50bp-1Mb 记录数: $(zcat ${OUT_PREFIX}_50bp_1Mb.vcf.gz | grep -v '^#' | wc -l)"
+echo "SVs 记录数: $(zcat ${OUT_PREFIX}_50bp.vcf.gz | grep -v '^#' | wc -l)"
