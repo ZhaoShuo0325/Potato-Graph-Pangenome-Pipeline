@@ -10,55 +10,57 @@
 # conda activate pggb_env
 
 # 设置变量
-HOME="/path/to/home"
-GFA="$HOME/Sim_01_02_total_p98_s10000_n5/Sim_01_02_total.fa.gz.a8a102b.7608fc1.5832edd.smooth.final.gfa"
+HOME="/public/home/zhaoshuo/work1/graph/pggb/exp1"
+GFA="$HOME/Sim_01_02_total_p98_s10000_n5/Sim_01_02_total.fa.gz.a8a102b.7608fc1.5832edd.smooth.final.gfa" #调整GFA路径
 OUT_PREFIX="pggb_gfa_sv"
 REF_PREFIX="DM8"
-DECON_DIR="$HOME/Sim_01_02_total_p98_s10000_n5/deconstruct"
+DECON_DIR="$HOME/Sim_01_02_total_p98_s10000_n5/deconstruct" #调整输出路径
+PYTHON_SCRIPT="/public/home/zhaoshuo/work1/graph/pggb/scripts/fix_pggb_vcf.py"
+
+
 mkdir -p "$DECON_DIR"
 cd "$DECON_DIR"
 
-# 解构 GFA 文件
+fix_pggb_vcf() {
+    local input=$1
+    local output=$2
+    local ref_prefix=$3
+    
+    # 获取 Python 脚本的绝对路径，确保在不同目录下都能找到
+    local python_script="$PYTHON_SCRIPT"
+
+    echo "[$(date +'%H:%M:%S')] 正在修复 VCF: $input -> $output"
+
+    # 管道调用：sed -> bcftools -> 你的外部python脚本 -> bcftools sort
+    sed "s/${ref_prefix}#0#//g" "$input" | \
+    bcftools norm -m -any --force | \
+    python3 "$python_script" | \
+    bcftools sort -Oz -o "$output"
+
+    tabix -f -p vcf "$output"
+    echo "[$(date +'%H:%M:%S')] 修复完成: $output"
+}
+
+# 解构 RAW VCF
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Deconstructing GFA -----"
 vg deconstruct -t 24 -P "$REF_PREFIX" -a "$GFA" > "${OUT_PREFIX}_raw.vcf"
-# 过滤解构结果
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Filtering Deconstructed VCF -----"
+
+# 过滤嵌套变异 (vcfbub)
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Filtering Deconstructed VCF (vcfbub) -----"
 vcfbub --input "${OUT_PREFIX}_raw.vcf" -l 0 -a 100000000 > "${OUT_PREFIX}_bubbled.vcf"
 
-# 修复 VCF 文件
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Fixing Deconstructed VCF -----"
-# 1. 提取原始 Header 并添加 SVLEN/SVTYPE 定义，同时移除前缀
-grep "^##" "${OUT_PREFIX}_bubbled.vcf" | sed "s/${REF_PREFIX}#0#//g" > fixed_header.vcf
-echo '##INFO=<ID=SVLEN,Number=A,Type=Integer,Description="SV length">' >> fixed_header.vcf
-echo '##INFO=<ID=SVTYPE,Number=A,Type=String,Description="SV type">' >> fixed_header.vcf
-grep "^#CHROM" "${OUT_PREFIX}_bubbled.vcf" | sed "s/${REF_PREFIX}#0#//g" >> fixed_header.vcf
-# 2. 处理变异行：计算长度、注入标签、移除前缀
-grep -v "^#" "${OUT_PREFIX}_bubbled.vcf" | sed "s/${REF_PREFIX}#0#//g" | awk '
-BEGIN {OFS="\t"}
-{
-    ref_len = length($4);
-    alt_len = length($5);
-    svlen = alt_len - ref_len;
-    svtype = (svlen >= 0 ? "INS" : "DEL");
-    
-    # 注入到 INFO 列
-    $8 = $8 ";SVLEN=" svlen ";SVTYPE=" svtype;
-    print $0;
-}' > fixed_body.vcf
-# 3. 合并并转为标准格式
-cat fixed_header.vcf fixed_body.vcf | bcftools sort -Oz -o "${OUT_PREFIX}_final.vcf.gz"
-tabix -f -p vcf "${OUT_PREFIX}_final.vcf.gz"
-# 4. 清理中间文件
-rm fixed_header.vcf fixed_body.vcf
+# 修复并分类 SV (INV/INS/DEL)
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Fixing VCF & Classifying SVs -----"
+fix_pggb_vcf "${OUT_PREFIX}_bubbled.vcf" "${OUT_PREFIX}_final.vcf.gz" "$REF_PREFIX"
 
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Deconstructed VCF saved to ${OUT_PREFIX}_final.vcf.gz -----"
+# 最后的统计与过滤验证
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Final Filtering SVs > 50bp -----"
+bcftools filter -i 'SVLEN >= 50' "${OUT_PREFIX}_final.vcf.gz" -Oz -o "${OUT_PREFIX}_50bp.vcf.gz"
+tabix -f -p vcf "${OUT_PREFIX}_50bp.vcf.gz"
 
-# 过滤 >50bp 的 SV
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Filtering SVs > 50bp -----"
-
-bcftools filter -i 'ABS(SVLEN) >= 50' \
-    "${OUT_PREFIX}_final.vcf.gz" -Oz -o ${OUT_PREFIX}_50bp.vcf.gz
-tabix -f -p vcf ${OUT_PREFIX}_50bp.vcf.gz
-bcftools stats ${OUT_PREFIX}_50bp.vcf.gz > ${OUT_PREFIX}_50bp.stats
-
-echo "SVs 记录数: $(zcat ${OUT_PREFIX}_50bp.vcf.gz | grep -v '^#' | wc -l)"
+# 打印各类型统计结果
+echo "========================================"
+echo "SV 统计报告:"
+bcftools query -f '%INFO/SVTYPE\n' "${OUT_PREFIX}_50bp.vcf.gz" | sort | uniq -c
+echo "总记录数: $(zcat ${OUT_PREFIX}_50bp.vcf.gz | grep -v '^#' | wc -l)"
+echo "========================================"
