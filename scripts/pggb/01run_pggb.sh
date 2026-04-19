@@ -10,7 +10,7 @@
 # conda activate pggb_env
 
 # 设置变量
-HOME="/path/to/home"
+HOME="/public/home/zhaoshuo/work1"
 REF="$HOME/data/reference/DM8.1_genome.fasta"
 ORI_DIR="$HOME/data/simulated/genomes" # 样本基因组路径
 OUT_DIR="$HOME/graph/pggb/exp1"
@@ -56,11 +56,11 @@ samtools faidx ${FINAL_FA}.gz
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Run PGGB -----"
 # PGGB建图参数
 f=$FINAL_FA.gz
-p=98 #根据样本距离设置
+p=99 #根据样本距离设置
 s=10000
 n=5 #样本数量
 k=47
-G=100,300
+G=500,2000
 ref=$REF
 t=64 #线程数 根据样本数量
 O=0.001 #覆盖率
@@ -79,4 +79,3 @@ pggb -i $f \
     -P $POA \
     -v
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- PGGB finished -----"
-
