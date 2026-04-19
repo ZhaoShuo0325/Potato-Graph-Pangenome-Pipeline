@@ -23,7 +23,7 @@ mkdir -p $OUT_DIR
 # 构建XG索引 用于vg call
 echo "Building XG index for vg call"
 vg index $VG -t 128 -L -x $OUT_DIR/${PREFIX}.xg
-#构建GBWT和GBZ 用于vg giraffe
+# 构建GBWT和GBZ 用于vg giraffe
 echo "Building GBWT and GBZ for vg giraffe"
 vg gbwt --num-jobs 128 -x $OUT_DIR/${PREFIX}.xg -v $VCF -o $OUT_DIR/${PREFIX}.gbwt
 vg gbwt --num-jobs 128 -x $OUT_DIR/${PREFIX}.xg $OUT_DIR/${PREFIX}.gbwt -g $OUT_DIR/${PREFIX}.gbz
