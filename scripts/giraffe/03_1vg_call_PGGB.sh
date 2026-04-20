@@ -41,7 +41,7 @@ fix_pggb_vcf() {
     echo "[$(date +'%H:%M:%S')] 修复完成: $output"
 }
 
-# --- 步骤 1: vg pack (计算覆盖度) ---
+# ---  vg pack (计算覆盖度) ---
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Phase 1: Packing -----"
 for SAMPLE in $SAMPLES; do
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] Processing $SAMPLE"
@@ -51,7 +51,7 @@ for SAMPLE in $SAMPLES; do
         -o "$OUT_DIR/${SAMPLE}.pack"
 done
 
-# --- 步骤 2: vg call (生成原始 VCF) ---
+# ---  vg call (生成原始 VCF) ---
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] ----- Phase 2: Calling -----"
 for SAMPLE in $SAMPLES; do
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] Calling $SAMPLE"
