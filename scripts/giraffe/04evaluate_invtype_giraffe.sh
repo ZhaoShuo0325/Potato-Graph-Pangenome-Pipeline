@@ -2,7 +2,7 @@
 #SBATCH --partition=AMD_9A14
 #SBATCH --mem=256G
 #SBATCH --cpus-per-task=128
-#SBATCH --job-name=evaluate_type_pggb
+#SBATCH --job-name=evaluate_type_giraffe
 #SBATCH --output=%x.out
 #SBATCH --error=%x.err
 
@@ -89,7 +89,6 @@ for sample in Sim_01 Sim_02; do
     done
 done
 
-# --- 最终可视化打印 (保持不变) ---
 # --- 最终可视化打印 (保持不变) ---
 echo -e "\n"
 echo "================================= SV EVALUATION REPORT ================================="
