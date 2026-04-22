@@ -2,7 +2,7 @@
 #SBATCH --partition=AMD_9A14
 #SBATCH --mem=256G
 #SBATCH --cpus-per-task=128
-#SBATCH --job-name=evaluate_type_pggb
+#SBATCH --job-name=evaluate_type_graphaligner
 #SBATCH --output=%x.out
 #SBATCH --error=%x.err
 
