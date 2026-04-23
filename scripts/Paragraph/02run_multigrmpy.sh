@@ -15,7 +15,7 @@ MY_PY="/public/home/zhaoshuo/miniconda3/envs/paragraph_env/bin/python" # 3.11
 HOME="/public/home/zhaoshuo/work1"
 SCRIPTS="/public/home/zhaoshuo/miniconda3/envs/paragraph_env/bin/multigrmpy.py"
 REF="$HOME/data/reference/DM8.1_genome.fasta"
-VCF="$HOME/graph/vg/exp1/Sim_01_02/deconstruct/Sim_01_02_50bp.vcf.gz"
+VCF="$HOME/graph/vg/vcf_data/Sim_01_02_final.vcf.gz"
 SAMPLE_LIST="$HOME/gt/paragraph/exp1/Sim_01_02_d${d}/samples.txt"
 OUT_DIR="$HOME/gt/paragraph/exp1/Sim_01_02_d${d}/result"
 
