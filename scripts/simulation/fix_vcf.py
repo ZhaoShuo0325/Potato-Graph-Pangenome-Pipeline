@@ -18,14 +18,12 @@ def main():
     for s in args.prefixes:
         if not os.path.exists(f"{s}.vcf"): continue
         
-        # 阶段 1: 格式化与重命名
         tmp_vcf = f"tmp_{s}.vcf"
         cmd = (f"sed 's/ID=SVLEN,Number=1/ID=SVLEN,Number=A/' {s}.vcf | awk '$1~/#/||$2>0' | "
                f"bcftools annotate --rename-chrs chr_map.txt | "
                f"bcftools reheader --samples <(echo {s}) -o {tmp_vcf}")
         subprocess.run(cmd, shell=True, check=True, executable='/bin/bash')
 
-        # 阶段 2: 序列还原
         with open(tmp_vcf, 'r') as f_in, open(f"{s}_fixed.vcf", 'w') as f_out:
             for line in f_in:
                 if line.startswith('#'):
