@@ -25,7 +25,7 @@ Length (bp)              = 50-150000
 Insertions               = 8000
 Length (bp)              = 50-100000
 
-Tandem duplications      = 0
+Tandem duplications      = 8000
 Length (bp)              = 50-10000
 Copies                   = 1-10
 
