@@ -1,86 +1,52 @@
-import os
-import subprocess
-import sys
-import argparse
+import os, subprocess, sys, argparse, re, pysam
 
-def get_reverse_complement(seq):
-    """计算 DNA 序列的反向互补"""
-    complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N',
-                  'a': 't', 'c': 'g', 'g': 'c', 't': 'a', 'n': 'n'}
-    return "".join(complement.get(base, base) for base in reversed(seq.strip()))
+DEFAULT_REF = "/public/home/zhaoshuo/work1/data/reference/DM8.1_genome.ori.chr.fa"
 
-def run_cmd(cmd):
-    """执行 Shell 命令"""
-    try:
-        subprocess.run(cmd, shell=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f" 出错: {e}")
-        sys.exit(1)
+def get_rc(seq):
+    cp = str.maketrans('ACGTNacgtn', 'TGCANtgcan')
+    return seq.translate(cp)[::-1]
 
 def main():
-    parser = argparse.ArgumentParser(description="指定前缀自动修复 VCF 和还原 INV 序列")
-    parser.add_argument("prefixes", type=str, nargs='+', help="VCF 文件的前缀名 (例如: nodup_01)")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("prefixes", nargs='+')
     args = parser.parse_args()
 
-    # 准备映射文件
-    chr_map = "chr_map.txt"
-    with open(chr_map, "w") as f:
-        for i in range(1, 13):
-            f.write(f"{i:02d} chr{i:02d}\n")
+    ref_fa = pysam.FastaFile(DEFAULT_REF)
+    with open("chr_map.txt", "w") as f:
+        for i in range(1, 13): f.write(f"{i:02d} chr{i:02d}\n")
 
-    # 处理每一个给定的文件
     for s in args.prefixes:
-        input_vcf = f"{s}.vcf"
-        final_vcf = f"{s}_fixed.vcf"
+        if not os.path.exists(f"{s}.vcf"): continue
+        
+        # 阶段 1: 格式化与重命名
+        tmp_vcf = f"tmp_{s}.vcf"
+        cmd = (f"sed 's/ID=SVLEN,Number=1/ID=SVLEN,Number=A/' {s}.vcf | awk '$1~/#/||$2>0' | "
+               f"bcftools annotate --rename-chrs chr_map.txt | "
+               f"bcftools reheader --samples <(echo {s}) -o {tmp_vcf}")
+        subprocess.run(cmd, shell=True, check=True, executable='/bin/bash')
 
-
-        if not os.path.exists(input_vcf):
-            print(f" 错误: 找不到文件 {input_vcf}")
-            sys.exit(1)
-
-
-
-        print(f" 正在处理样本: {s}")
-
-        # --- 第一阶段: 结构修复与命名标准化 ---
-        tmp_base = f"tmp_{s}_1.vcf"
-        tmp_renamed = f"tmp_{s}_2.vcf"
-        tmp_sample = f"sample_{s}.txt"
-
-        # 修复 SVLEN, 过滤坐标, 更名染色体
-        run_cmd(f"sed 's/ID=SVLEN,Number=1/ID=SVLEN,Number=A/' {input_vcf} | awk '$1~/#/||$2>0' > {tmp_base}")
-        run_cmd(f"bcftools annotate --rename-chrs {chr_map} {tmp_base} -Ov -o {tmp_renamed}")
-    
-        # 修复样本名 (Header)
-        with open(tmp_sample, "w") as f:
-            f.write(s)
-    
-        mid_vcf = f"tmp_{s}_mid.vcf"
-        run_cmd(f"bcftools reheader --samples {tmp_sample} {tmp_renamed} -o {mid_vcf}")
-
-        # --- 第二阶段: 还原倒位序列 (Python 逻辑) ---
-        inv_count = 0
-        with open(mid_vcf, 'r') as f_in, open(final_vcf, 'w') as f_out:
+        # 阶段 2: 序列还原
+        with open(tmp_vcf, 'r') as f_in, open(f"{s}_fixed.vcf", 'w') as f_out:
             for line in f_in:
                 if line.startswith('#'):
-                    f_out.write(line)
-                    continue
-            
-                cols = line.split('\t')
-                # 识别 INV 变异
-                if "<INV>" in cols[4] or "SVTYPE=INV" in cols[7]:
-                    cols[4] = get_reverse_complement(cols[3])
-                    inv_count += 1
-                f_out.write("\t".join(cols))
+                    f_out.write(line); continue
+                
+                c = line.split('\t')
+                chrom, pos, ref, info = c[0], int(c[1]), c[3], c[7]
+                svlen = abs(int(m.group(1))) if (m := re.search(r'SVLEN=(-?\d+)', info)) else 0
 
-        # --- 清理样本相关的临时文件 (不删 chr_map) ---
-        for tmp in [tmp_base, tmp_renamed, tmp_sample, mid_vcf]:
-            if os.path.exists(tmp):
-                os.remove(tmp)
+                if "SVTYPE=INV" in info or "<INV>" in c[4]:
+                    seq = ref if len(ref) > 1 else ref_fa.fetch(chrom, pos-1, pos-1+svlen)
+                    c[4] = get_rc(seq)
+                elif "SVTYPE=DUP:TANDEM" in info:
+                    if svlen > 0:
+                        c[4] = ref + ref_fa.fetch(chrom, pos, pos + svlen)
+                
+                f_out.write("\t".join(c))
 
-        print(f" 处理完成")
-        print(f" 还原倒位: {inv_count} 条")
-        print(f" 输出文件: {final_vcf}")
+        for f in [tmp_vcf, "chr_map.txt"]: 
+            if os.path.exists(f): os.remove(f)
+        print(f"Done: {s}")
 
 if __name__ == "__main__":
     main()
