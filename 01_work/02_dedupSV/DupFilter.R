@@ -37,7 +37,6 @@ if(any(missing_end)) {
 
 bad_coords <- end(svs.gr) < start(svs.gr)
 if(any(bad_coords)) end(svs.gr)[bad_coords] <- start(svs.gr)[bad_coords]
-# ----------------------------------------------
 
 # 过滤条件
 min.rol <- 0.8
