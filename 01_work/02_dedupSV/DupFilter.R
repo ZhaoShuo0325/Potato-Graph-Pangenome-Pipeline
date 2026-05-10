@@ -88,6 +88,6 @@ if(nrow(ol.df) > 0){
 }
 
 svs_filtered <- svs[!(names(svs) %in% ids_to_remove), ]
-writeVcf(svs_filtered, file.path(output_dir, paste0('filterDup_', current_chr, '.vcf')))
+writeVcf(svs_filtered, file.path(output_dir, paste0('DupFilter_', current_chr, '.vcf')))
 
 cat(paste0(current_chr, " Done. Original: ", length(svs), " | Removed: ", length(ids_to_remove), " | Remaining: ", length(svs_filtered), "\n"))
