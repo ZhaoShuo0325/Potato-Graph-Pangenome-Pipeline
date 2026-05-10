@@ -17,3 +17,12 @@ varigraph genotype -t 128 \
                    --sv \
                    -n 12
 done
+
+# varigraph 生成的 vcf.gz 不是 bgzip 压缩格式，需要手动修改
+#for i in {01..12}; do
+#    echo "正在修复 chr${i} 目录..."
+#    for f in chr${i}/*.vcf.gz; do
+#        zcat "$f" | bgzip -c > "${f}.tmp" && mv "${f}.tmp" "$f"
+#        tabix -f -p vcf "$f"
+#    done
+#done
