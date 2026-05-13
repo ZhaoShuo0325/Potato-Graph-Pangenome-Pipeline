@@ -4,12 +4,8 @@ REF="$HOME/data/reference/DM8.1_genome.ori.chr.fa"
 VCF_DIR="$HOME/merge_test/00_data/04_mergeSV"
 CHR="$HOME/merge_test/00_data/chrs.txt"
 OUT_DIR="$HOME/merge_test/02_graph/04_vg_merge"
-for chr in $(cat $CHR); do
-    sed "s/50/128/g" work.sh | \
-    sed "s/edta/vg_$chr/g" | \
-    sed "s/%j/vg_$chr/g" > vg_$chr.sh
 
-cat >> vg_$chr.sh << EOF
+for chr in $(cat $CHR); do
 vg construct -t 128 \
     -r $REF \
     -R ${chr} \
@@ -23,6 +19,4 @@ vg gbwt --num-jobs 128 \
     -o "$OUT_DIR/${chr}.gbwt" \
     --vcf-variants \
     --progress
-EOF
-sbatch vg_$chr.sh
 done
