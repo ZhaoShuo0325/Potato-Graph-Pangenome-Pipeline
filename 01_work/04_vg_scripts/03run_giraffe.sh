@@ -9,11 +9,6 @@ LIST="$HOME/merge_test/00_data/real.txt"
 OUT_DIR="$HOME/merge_test/02_graph/04_vg_merge/giraffe"
 
 for chr in $(cat $CHR); do
-    sed "s/50/128/g" work.sh | \
-    sed "s/edta/giraffe_$chr/g" | \
-    sed "s/%j/giraffe_$chr/g" > giraffe_$chr.sh
-
-cat >> giraffe_$chr.sh << EOF
 GBZ="$PREP_DIR/vg_merge_$chr.gbz"
 DIST="$PREP_DIR/vg_merge_$chr.dist"
 MIN="$PREP_DIR/vg_merge_$chr.min"
@@ -31,6 +26,4 @@ vg giraffe -t 128 \
         -f $FQ_DIR/\${sample}_d${d}_PE2.fq.gz \
         -o gam > \$OUT/\${sample}_${chr}_giraffe.gam
 done
-EOF
-sbatch giraffe_$chr.sh
 done
