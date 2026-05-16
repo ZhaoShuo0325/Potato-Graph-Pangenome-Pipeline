@@ -10,11 +10,6 @@ SNARLS_DIR="$HOME/merge_test/02_graph/04_vg_merge/prep"
 OUT_DIR="$HOME/merge_test/02_graph/04_vg_merge/giraffe/giraffe_d${d}/vg_call/results"
 
 for chr in $(cat $CHR); do
-    sed "s/50/128/g" work.sh | \
-    sed "s/edta/call_$chr/g" | \
-    sed "s/%j/call_$chr/g" > call_$chr.sh
-
-cat >> call_$chr.sh << EOF
 mkdir -p "$OUT_DIR"
 XG="$XG_DIR/vg_merge_${chr}.xg"
 SNARLS="$SNARLS_DIR/vg_merge_${chr}.snarls"
@@ -27,6 +22,4 @@ for SAMPLE in \$(cat \$LIST); do
         -s "\$SAMPLE" \
         \$REF_PATHS > "$OUT_DIR/\${SAMPLE}_${chr}.raw.vcf"
 done
-EOF
-sbatch call_$chr.sh
 done
