@@ -1,9 +1,4 @@
 #!/bin/bash
-#SBATCH --partition=AMD_9A14
-#SBATCH --cpus-per-task=128
-#SBATCH --job-name=sim_giraffe
-#SBATCH --output=%x.out
-#SBATCH --error=%x.err
 
 HOME="/public/home/zhaoshuo/work1"
 CHR="chr02"
@@ -21,7 +16,7 @@ f2="$HOME/simulation/varsim_out/${SAMPLE_NAME}/${SAMPLE_NAME}_read2.fq.gz"
 
 mkdir -p $OUT_DIR
 # simulate reads
-vg sim -r -n 100000 -l 150 -a -s 12345 -p 570 -v 165 -i 0.00029 -t 128 -x $XG -F $f1 -F $f2 | vg annotate -p -x $XG -a - > $OUT_DIR/sim_giraffe.gam
+vg sim -r -n 100000 -l 150 -a -s 12345 -p 570 -v 165 -i 0.00029 -t 128 -x $XG -g $GBWT --sample-name $SAMPLE_NAME -F $f1 -F $f2 | vg annotate -p -x $XG -a - > $OUT_DIR/sim_giraffe.gam
 
 # convert to fastq
 vg view -X -a $OUT_DIR/sim_giraffe.gam | gzip > $OUT_DIR/sim_giraffe.fastq.gz
