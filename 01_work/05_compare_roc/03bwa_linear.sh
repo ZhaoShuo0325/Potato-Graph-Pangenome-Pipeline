@@ -1,15 +1,10 @@
 #!/bin/bash
-#SBATCH --partition=AMD_9A14
-#SBATCH --cpus-per-task=128
-#SBATCH --job-name=bwa_liner
-#SBATCH --output=%x.out
-#SBATCH --error=%x.err
 
 HOME="/public/home/zhaoshuo/work1"
 REF="$HOME/data/reference/DM8.1_genome.ori.chr.fa"
 NAME="bwa_linear"
-FQ="$HOME/merge_test/04_compare/02sim_linear/linear_linear.fastq.gz"
-XG="$HOME/merge_test/04_compare/02sim_linear/linear.xg"
+FQ="$HOME/merge_test/04_compare/01_sim_giraffe/sim_giraffe.fastq.gz"
+XG="$HOME/merge_test/02_graph/05_vg_dupfilter/prep/vg_dupfilter_chr02.xg"
 OUT_DIR="$HOME/merge_test/04_compare/03bwa_linear"
 
 mkdir -p $OUT_DIR
@@ -19,7 +14,7 @@ samtools index -@ 128 $OUT_DIR/DM_raw_${NAME}.bam
 samtools view -F 2048 -b $OUT_DIR/DM_raw_${NAME}.bam chr02 > $OUT_DIR/mapped_DM_${NAME}.bam
 samtools index -@ 128 $OUT_DIR/mapped_DM_${NAME}.bam
 vg inject -x $XG $OUT_DIR/mapped_DM_${NAME}.bam -t 128 > $OUT_DIR/mapped_DM_${NAME}.gam
-vg view -aj $OUT_DIR/mapped_DM_${NAME}.gam | sed 's/\/1/_1/g' | sed 's/\/2/_2/g' | vg view -aGJ - | vg annotate -m -x $XG -a - | vg gamcompare -r 100 -s - $HOME/merge_test/04_compare/02sim_linear/linear_linear.gam 2> $OUT_DIR/${NAME}_count_${NAME}.txt | vg view -aj - > $OUT_DIR/compared_${NAME}.json
+vg view -aj $OUT_DIR/mapped_DM_${NAME}.gam | sed 's/\/1/_1/g' | sed 's/\/2/_2/g' | vg view -aGJ - | vg annotate -m -x $XG -a - | vg gamcompare -r 100 -s - $HOME/merge_test/04_compare/01_sim_giraffe/sim_giraffe.gam 2> $OUT_DIR/${NAME}_count_${NAME}.txt | vg view -aj - > $OUT_DIR/compared_${NAME}.json
 
 READS=illumina
 PAIRING=paired
