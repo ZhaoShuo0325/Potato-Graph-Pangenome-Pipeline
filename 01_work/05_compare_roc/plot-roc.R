@@ -145,8 +145,9 @@ range.unlogged = 10^range.log10
 
 dat.roc <- dat.roc %>%
     mutate(aligner = case_when(
-        aligner == "bwa_bwa-chr02illumina-pe" ~ "BWA-PE",
-        aligner == "giraffe_default_chr02liner-refilluminapaired" ~ "Giraffe-Liner",
+        aligner == "bwa_bwa-chr02illumina-pe" ~ "BWA-Linear",
+        aligner == "giraffe_default_chr02graph-linearilluminapaired" ~ "Giraffe-Linear",
+        aligner == "giraffe_default_chr02fullilluminapaired" ~ "Giraffe-Graph",
         TRUE ~ as.character(aligner) # 如果有其他名称，保持不变
     ))
 
